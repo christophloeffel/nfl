@@ -8,13 +8,15 @@
  <script src="https://d3js.org/d3.v4.min.js"></script>
  <link href="https://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Doppio+One" rel="stylesheet">
  <style>
  
  body {
 		
 			
-			font-family: 'Open Sans Condensed', sans-serif;
+			font-family: 'Doppio One', sans-serif;
 			text-align: center;
+			
 		}
 div.tooltip {	
 font: 12px sans-serif;	
@@ -259,7 +261,7 @@ svg.selectAll(".donutText")
 			.data(data)
 		   .enter().append("text")
 	.attr("class", "arcTxt")
-	.attr("font-size", 10+"px")
+	.attr("font-size", 8+"px")
 	.style("fill", "black")
 	.attr("x", (Math.PI*2*(hArc*(attributes+1)-1+hCenter))/attributes/2)  //Move the text from the start angle of the arc
 	.attr("dy", 0) //Move the text down
@@ -270,7 +272,7 @@ svg.selectAll(".donutText")
 	.attr("startOffset", "0%")	
 
 	
-	.text(function(d){return d.team});
+	.text(function(d){if(d.team =="Buccaneers"){return "Bucs";} return d.team});
 	
 
 
@@ -281,19 +283,19 @@ svg.selectAll(".donutText")
 	var keyElements = svg.append("g");
 	
 	keyElements.selectAll("circle").data(d3.range(5)).enter().append("circle").attr("cx",15).attr("cy",function(d,i){return 50+13*i}).attr("r",5).attr("fill",function(d,i){return cScale(i*25);}).attr("stroke", "black").attr("stroke-width", "0.5px");
-	keyElements.selectAll("text").data(d3.range(5)).enter().append("text").attr("x",25).attr("y",function(d,i){return 50+13*i+3}).text(function(d,i){return i*25+"% wins"}).attr("font-size","10");
+	keyElements.selectAll("text").data(d3.range(5)).enter().append("text").attr("x",25).attr("y",function(d,i){return 50+13*i+3}).text(function(d,i){return i*25+"% wins"}).attr("font-size","8");
 
 	
 	
-	keyElements.append("text").attr("x",25).attr("y",function(d,i){return 50+13*5+3}).text("Team was not active that year").attr("font-size","10");
+	keyElements.append("text").attr("x",25).attr("y",function(d,i){return 50+13*5+3}).text("Team was not active that year").attr("font-size","8");
 	keyElements.append("circle").attr("cx",15).attr("cy",function(d,i){return 50+13*5}).attr("r",5).attr("fill","#626262").attr("stroke", "black").attr("stroke-width", "0.5px");
 
 
-	keyElements.append("text").attr("x",25).attr("y",function(d,i){return 50+13*6+4}).text("Won the Super Bowl").attr("font-size","10");
+	keyElements.append("text").attr("x",25).attr("y",function(d,i){return 50+13*6+4}).text("Won the Super Bowl").attr("font-size","8");
 	keyElements.append("circle").attr("cx",15).attr("cy",function(d,i){return 50+13*6}).attr("r",5).attr("fill","none").attr("stroke", "#FFC400").attr("stroke-dasharray","2,2").attr("stroke-width", "2px");
 
 
-	keyElements.append("text").attr("x",25).attr("y",function(d,i){return 50+13*7+4}).text("Lost the Super Bowl").attr("font-size","10");
+	keyElements.append("text").attr("x",25).attr("y",function(d,i){return 50+13*7+4}).text("Lost the Super Bowl").attr("font-size","8");
 	keyElements.append("circle").attr("cx",15).attr("cy",function(d,i){return 50+13*7}).attr("r",5).attr("fill","none").attr("stroke", "#676767").attr("stroke-dasharray","2,2").attr("stroke-width", "2px");
 	keyElements.append("text").attr("x",10).attr("y",function(d,i){return 30}).text("NFL-Records by Franchise since 1980:").attr("font-size","30").attr("class","title");
 
