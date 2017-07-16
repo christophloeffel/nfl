@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+ 
+    <meta charset="utf-8">
+    <title>D3</title>
+ <script src="https://d3js.org/d3.v4.min.js"></script>
+ <link href="https://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300" rel="stylesheet">
+ <style>
+ 
+ body {
+		
+			
+			font-family: 'Open Sans Condensed', sans-serif;
+			text-align: center;
+		}
+div.tooltip {	
+font: 12px sans-serif;	
+    position: absolute;			
+    text-align: center;			
+   					
+  
+    background: lightsteelblue;	
+    border-style: solid;
+    border-width: 1px;
+	border-color: grey;
+    border-radius: 3px;			
+    pointer-events: none;			
+}
+.title{
+font-family: 'Open Sans Condensed', sans-serif;
+}
+
+
+	  </style>
+  </head>
+  <body>
+ 
+
+    <script>
+	
+//Globals:
+var hSvg = window.innerHeight-15;
+var wSvg = window.innerWidth;
+var hCenter = 15; // Size of the empty center
+
+var hArc = (hSvg-5*hCenter)/(37*2); // Size of the empty center; //Height of one Arc
+var oldColor; //old color before hover of path
+var categories; // Number of categories: Team A,B,C
+var attributes = 37; // Number of years per category
+var scaleSpace = Math.PI*0.06 // Space for the Scale in the middle
+//########
+
+//Heat Color Scale
+var cScale = d3.scaleLinear()
+	.domain([0,50,100])
+	.range(["red","white", "blue"]);
+
+d3.csv("data.csv",function(d){
+
+for (var key in d) {
+	if (key != "team"){
+				
+				d[key] = d[key].split(";");
+				
+				}
+		
+	}
+	return d;
+
+
+
+},
+function(rawData){
+	
+	categories = rawData.length;
+	
+	
+	
+	data = rawData;
+	
+	draw();
+});
+
+function draw(){
+	//Create SVG
+	var svg = d3.select("body").append("svg").attr("width", wSvg).attr("height",hSvg);
+	
+	//Create Div for Tooltip
+	var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);	
+	
+	//Create Line
+	svg.append("line")  
+		.style("stroke", "grey")
+		.attr("opacity", 0.2)		
+		.attr("x1", hSvg/2)    
+		.attr("y1", wSvg/2-hCenter*1.0)      
+		.attr("x2", hSvg/2)    
+		.attr("y2", wSvg/2-hArc*20-hCenter);  
+	
+	// DRAW ARCS
+	var arcs = svg.selectAll("g.category").data(data).enter().append("g")
+		.attr("class", "category")
+		.attr("id", function(d){return d.team;})
+		.attr("fill", function(d,i){
+
+			var j = 0;
+			for (var key in d) {
+				if (d.hasOwnProperty(key) && key != "team") {
+  
+   
+					d3.select(this).append("path")
+						.attr("stroke", function(d){
+							if(d[key][5] =="sb"){return "#FFC400";}
+							if(d[key][5] =="cs"){return "#676767";}
+							return "none";
+						
+						
+						
+						})
+						.attr("stroke-width",2)
+						.attr("stroke-dasharray","2,3")
+						.attr("d", function(){
+								var subarc = d3.arc().innerRadius(hArc*j+hCenter).outerRadius(hArc*(j+1)-1+hCenter).startAngle((i/categories)*(Math.PI*2-2*scaleSpace)+scaleSpace+0.01).endAngle((i+1)/categories * (Math.PI*2-2*scaleSpace)+scaleSpace-0.01);
+								return subarc();})
+						.attr("fill", function(d){
+						if ("undefined" === typeof d[key][4])  {
+							return "#626262";}
+						return cScale(d[key][4]);})
+						.attr("class", "Attr"+key)
+						
+						.attr("value", function(){
+							if (typeof(d[key][4]) != "undefined"){
+							
+								if ((d[key][5]) =="sb"){
+							return d[key][0]+ " (" + key+")"+"</br>"+"Record: "+ d[key][1] + "-" + d[key][2]+"-" +d[key][3] +" (."+d[key][4] + ")" +"</br>"+ " Won the Super Bowl";
+							}
+							if ((d[key][5]) =="cs"){
+							return d[key][0]+ " (" + key+")"+"</br>"+"Record: "+ d[key][1] + "-" + d[key][2]+"-" +d[key][3] +" (."+d[key][4] + ")" +"</br>" + " Lost the Super Bowl";
+							}
+							return d[key][0]+ " (" + key+")"+"</br>"+"Record: "+ d[key][1] + "-" + d[key][2]+"-" +d[key][3] +" (."+d[key][4] + ")";
+							}
+							return "Team was not active in " + key;
+							}) // Tooltip Text
+						.on("mouseover", function(){
+						oldColor = d3.select(this).attr("stroke");
+						d3.select(this).attr("stroke-width", 2).attr("stroke","#AD1C1C");
+						
+						
+								 div.transition()		
+                .duration(200)		
+                .style("opacity", .9);		
+				div.html(d3.select(this).attr("value")			)	
+					.style("left", (d3.event.pageX) +10+ "px")		
+					.style("top", (d3.event.pageY - 22) + "px");
+						
+						
+						
+						
+						
+						})
+						.on("mouseout", function(){ d3.select(this)
+							.attr("stroke", oldColor)
+						.attr("stroke-width",2)
+						.attr("stroke-dasharray","2,3");
+						
+								 div.transition()		
+                .duration(500)		
+                .style("opacity", 0);
+						
+						
+						
+						
+						
+						
+						});
+					j = j+1;
+				}
+			}
+		return "none";
+		})
+	.attr("transform", "translate(" + wSvg/2 +","+ hSvg/2 + ")");
+	
+	// DRAW Hoverspace
+	var hoverspace = svg.append("g").attr("class", "hoverspace").attr("transform", "translate(" + wSvg/2 +","+ hSvg/2 + ")");
+	for(j=1; j <= attributes; j++){
+				
+						hoverspace.append("path")
+						.attr("class", "Attr"+(j+1979))
+						.attr("d", function(){
+								var subarc = d3.arc().innerRadius(hArc*(j-1)+hCenter).outerRadius(hArc*(j)+hCenter).startAngle(-scaleSpace).endAngle(scaleSpace);
+								return subarc();})
+						.attr("fill", "white")
+						.on("mouseover", function(){					
+						var classname = d3.select(this).attr("class");
+							
+						d3.selectAll("g.category").selectAll("path").attr("opacity",0.25);
+						d3.selectAll("path."+classname).attr("opacity", 1);
+						
+				
+						
+						
+						return;})
+						.on("mouseout", function(){
+						d3.selectAll("g.category").selectAll("path").attr("opacity",1);
+						
+						
+				
+						
+						return;
+						});
+						
+						
+				
+	}	
+	var j = 0;
+	// DRAW SCALE
+	//Generate Container for Scale
+	var scale = svg.append("g").attr("class", "scale");
+	for (var key in data[0]) {
+				if (data[0].hasOwnProperty(key) && key != "team") {
+						if((key%10 ==0 || key%10 ==5)&&key>1980){
+							scale.append("text")        
+								.style("fill", "black")  
+								.attr("x", wSvg/2)           
+								.attr("y", hSvg/2-hCenter-j*hArc) 
+								.attr("text-anchor", "middle")
+								.text(key)
+								.style("font-size", hArc*1.5+"px")
+								.style("font-family", "'Pacifico', cursive")
+								.style("pointer-events","none") ;
+								
+						}
+						j = j+1;
+				}
+	}
+
+var arcs = svg.selectAll("path.labels").data(data).enter().append("path")
+		.attr("class", "labels")
+		.attr("id", function(d,i){return "label"+i})
+		.attr("d", function(d,i){
+								var subarc = d3.arc().innerRadius(hArc*attributes+hCenter).outerRadius(hArc*(attributes+1)-1+hCenter).startAngle((i/categories)*(Math.PI*2-2*scaleSpace)+scaleSpace+0.01).endAngle((i+1)/categories * (Math.PI*2-2*scaleSpace)+scaleSpace-0.01);
+								return subarc();})
+		.attr("fill", function(d,i)
+						{
+						
+				
+						return "none";
+						
+						}
+						
+						)
+		
+	.attr("transform", "translate(" + wSvg/2 +","+ hSvg/2 + ")");
+	
+svg.selectAll(".donutText")
+			.data(data)
+		   .enter().append("text")
+	.attr("class", "arcTxt")
+	.attr("font-size", 10+"px")
+	.style("fill", "black")
+	.attr("x", (Math.PI*2*(hArc*(attributes+1)-1+hCenter))/attributes/2)  //Move the text from the start angle of the arc
+	.attr("dy", 0) //Move the text down
+   .append("textPath") //append a textPath to the text element
+   .attr("class", "arcTxt")
+	.attr("xlink:href", function(d,i){return "#label"+i}) //place the ID of the path here
+	.style("text-anchor","middle") //place the text halfway on the arc
+	.attr("startOffset", "0%")	
+
+	
+	.text(function(d){return d.team});
+	
+
+
+//##############################
+// DRAW KEY	
+//##############################
+
+	var keyElements = svg.append("g");
+	
+	keyElements.selectAll("circle").data(d3.range(5)).enter().append("circle").attr("cx",15).attr("cy",function(d,i){return 50+13*i}).attr("r",5).attr("fill",function(d,i){return cScale(i*25);}).attr("stroke", "black").attr("stroke-width", "0.5px");
+	keyElements.selectAll("text").data(d3.range(5)).enter().append("text").attr("x",25).attr("y",function(d,i){return 50+13*i+3}).text(function(d,i){return i*25+"% wins"}).attr("font-size","10");
+
+	
+	
+	keyElements.append("text").attr("x",25).attr("y",function(d,i){return 50+13*5+3}).text("Team was not active that year").attr("font-size","10");
+	keyElements.append("circle").attr("cx",15).attr("cy",function(d,i){return 50+13*5}).attr("r",5).attr("fill","#626262").attr("stroke", "black").attr("stroke-width", "0.5px");
+
+
+	keyElements.append("text").attr("x",25).attr("y",function(d,i){return 50+13*6+4}).text("Won the Super Bowl").attr("font-size","10");
+	keyElements.append("circle").attr("cx",15).attr("cy",function(d,i){return 50+13*6}).attr("r",5).attr("fill","none").attr("stroke", "#FFC400").attr("stroke-dasharray","2,2").attr("stroke-width", "2px");
+
+
+	keyElements.append("text").attr("x",25).attr("y",function(d,i){return 50+13*7+4}).text("Lost the Super Bowl").attr("font-size","10");
+	keyElements.append("circle").attr("cx",15).attr("cy",function(d,i){return 50+13*7}).attr("r",5).attr("fill","none").attr("stroke", "#676767").attr("stroke-dasharray","2,2").attr("stroke-width", "2px");
+	keyElements.append("text").attr("x",10).attr("y",function(d,i){return 30}).text("NFL-Records by Franchise since 1980:").attr("font-size","30").attr("class","title");
+
+
+
+//#############################
+//#############################
+//#############################
+
+}
+
+    </script>
+  </body>
+</html>
