@@ -190,6 +190,7 @@ function draw(){
 	for(j=1; j <= attributes; j++){
 				
 						hoverspace.append("path")
+						.attr("id", "year"+(j+1979))
 						.attr("class", "Attr"+(j+1979))
 						.attr("d", function(){
 								var subarc = d3.arc().innerRadius(hArc*(j-1)+hCenter).outerRadius(hArc*(j)+hCenter).startAngle(-scaleSpace).endAngle(scaleSpace);
@@ -197,7 +198,9 @@ function draw(){
 						.attr("fill", "white")
 						.on("mouseover", function(){					
 						var classname = d3.select(this).attr("class");
-							
+						
+						
+						d3.selectAll("#"+d3.select(this).attr("id")).attr("opacity", 0.5);
 						d3.selectAll("g.category").selectAll("path").attr("opacity",0.25);
 						d3.selectAll("path."+classname).attr("opacity", 1);
 						
@@ -207,7 +210,10 @@ function draw(){
 						return;})
 						.on("mouseout", function(){
 						d3.selectAll("g.category").selectAll("path").attr("opacity",1);
-						
+						//if(d3.select(this).attr("id") == "permanentYear")
+						//{
+						d3.selectAll("#"+d3.select(this).attr("id")).transition().duration(100).attr("opacity", 0.0);
+					//	}
 						
 				
 						
@@ -224,7 +230,8 @@ function draw(){
 	for (var key in data[0]) {
 				if (data[0].hasOwnProperty(key) && key != "team") {
 						if((key%10 ==0 || key%10 ==5)&&key>1980){
-							scale.append("text")        
+							scale.append("text")
+								
 								.style("fill", "black")  
 								.attr("x", wSvg/2)           
 								.attr("y", hSvg/2-hCenter-j*hArc) 
@@ -234,6 +241,20 @@ function draw(){
 								.style("font-family", "'Pacifico', cursive")
 								.style("pointer-events","none") ;
 								
+						}
+						else{
+						scale.append("text")
+								.attr("id", "year"+key)
+								.style("fill", "black")  
+								.attr("x", wSvg/2)           
+								.attr("y", hSvg/2-hCenter-j*hArc) 
+								.attr("text-anchor", "middle")
+								.text(key)
+								.style("font-size", hArc*1.5+"px")
+								.style("font-family", "'Pacifico', cursive")
+								.style("pointer-events","none")
+								.attr("opacity", 0.0);
+						
 						}
 						j = j+1;
 				}
